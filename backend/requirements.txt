@@ -1,0 +1,8 @@
+asgiref==3.8.1
+cryptography
+Django==3.2.4
+gunicorn
+psycopg2-binary
+pytz==2024.2
+sqlparse==0.5.2
+typing_extensions==4.12.2
