@@ -1,12 +1,7 @@
 $(document).ready(function () {
     const API_BASE_URL = "/api";
 
-    // Function to load tokens from localStorage
-    function getAccessToken() {
-        return localStorage.getItem("accessToken");
-    }
-
-    // Ensure the access token is included in the Authorization header
+    // Ensure the access token is included in the Authorization header and handle 401
     $.ajaxSetup({
         beforeSend: function (xhr) {
             const accessToken = getAccessToken();
@@ -14,7 +9,97 @@ $(document).ready(function () {
                 xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
             }
         },
+        error: function (xhr) {
+            if (xhr.status === 401) {
+                clearTokens();
+                loadPage("login");
+                $("#message").text("Your session has expired. Please log in again.");
+            }
+        },
     });
+
+    loadNavbar();
+    function checkAuthentication(onSuccess, onFailure) {
+        $.ajax({
+            url:`${API_BASE_URL}/getme/`,
+            method: "GET",
+            success: function (data) {
+                onSuccess(data); // Call the success callback with user data
+            },
+            error: function (xhr) {
+                if (xhr.status === 401) {
+                    clearTokens(); // Clear any invalid tokens
+                    if (onFailure) onFailure(); // Call the failure callback
+                }
+            },
+        });
+    }
+
+    function loadNavbar() {
+        checkAuthentication((userData) => {
+            const emailDropdown = `
+                <div class="user-menu">
+                    <button id="userEmail" class="dropdown-toggle">${userData.email}</button>
+                    <div class="dropdown-menu">
+                        <a href="#" id="logoutLink">Logout</a>
+                    </div>
+                </div>
+            `;
+
+            $("#navbar").html(`
+                <nav>
+                    <a href="#" data-page="main">Home</a>
+                    <a href="#" data-page="browseJobs">Browse Jobs</a>
+                    <a href="#" data-page="postJobs" id="postJobsLink">Post Jobs</a>
+                    ${emailDropdown}
+                </nav>
+            `);
+
+            // Attach event handlers
+            attachNavbarEventHandlers();
+        }, () => {
+            // Load navbar without user details if not authenticated
+            $("#navbar").html(`
+                <nav>
+                    <a href="#" data-page="main">Home</a>
+                    <a href="#" data-page="browseJobs">Browse Jobs</a>
+                    <a href="#" data-page="login">Login</a>
+                    <a href="#" data-page="register">Register</a>
+                </nav>
+            `);
+
+            // Attach event handlers
+            attachNavbarEventHandlers();
+        });
+    }
+
+    function attachNavbarEventHandlers() {
+        // Handle page navigation
+        $("nav a").on("click", function (e) {
+            e.preventDefault();
+            const page = $(this).data("page");
+            loadPage(page);
+        });
+
+        // Handle dropdown toggle
+        $(document).on("click", "#userEmail", function () {
+            $(".dropdown-menu").toggle(); // Toggle visibility of the dropdown menu
+        });
+
+        // Handle logout
+        $(document).on("click", "#logoutLink", function (e) {
+            e.preventDefault();
+            clearTokens();
+            loadNavbar(); // Refresh the navbar
+            loadPage("login"); // Redirect to login page
+        });
+    }
+
+
+    // Function to load tokens from localStorage
+    function getAccessToken() {
+        return localStorage.getItem("accessToken");
+    }
 
     function getRefreshToken() {
         return localStorage.getItem("refreshToken");
@@ -54,6 +139,14 @@ $(document).ready(function () {
 
     // Function to load pages dynamically
     function loadPage(page) {
+        const isAuthenticated = Boolean(getAccessToken()); // Check if the user is authenticated
+
+        // Prevent authenticated users from accessing login and registration pages
+        if (isAuthenticated && (page === "login" || page === "register")) {
+            loadPage("main"); // Redirect to the main page if already authenticated
+            return;
+        }
+
         switch (page) {
             case "main":
                 $("#app").html(`
@@ -94,6 +187,22 @@ $(document).ready(function () {
                     </form>
                     <p id="message"></p>
                 `);
+                break;
+            case "browseJobs":
+                $("#app").html(`
+                    <h1>Browse Jobs</h1>
+                    <p>Job listings will appear here...</p>
+                `);
+                break;
+
+            case "postJobs":
+                // Check if user is authenticated
+                checkAuthentication(() => {
+                    $("#app").html(`
+                        <h1>Post Jobs</h1>
+                        <p>This page will allow users to post jobs.</p>
+                    `);
+                });
                 break;
 
             default:
