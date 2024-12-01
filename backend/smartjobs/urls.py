@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 import user.views as user_views
+import core.views as core_views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -24,4 +25,6 @@ urlpatterns = [
     path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/getme/', user_views.GetMeView.as_view(), name='getme'),
+    path('api/areas-of-work/', core_views.AreaOfWorkList.as_view(), name='areas-of-work'),
+    path('api/position-types/', core_views.PositionTypeList.as_view(), name='position-types'),
 ]

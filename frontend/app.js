@@ -219,6 +219,7 @@ $(document).ready(function () {
             contentType: "application/json",
             data: JSON.stringify({ email, password }),
             success: function () {
+                loadPage("login");
                 $("#message").text("Registration successful! Please login.");
             },
             error: function (xhr) {

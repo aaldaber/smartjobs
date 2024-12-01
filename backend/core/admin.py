@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import PositionType, AreaOfWork
 
-# Register your models here.
+admin.site.register(PositionType)
+admin.site.register(AreaOfWork)
+
