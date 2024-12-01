@@ -202,7 +202,11 @@ $(document).ready(function () {
                         <h1>Post Jobs</h1>
                         <p>This page will allow users to post jobs.</p>
                     `);
-                });
+                },
+                    () => {
+                    loadPage("login");
+                    }
+                );
                 break;
 
             default:
