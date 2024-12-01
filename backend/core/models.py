@@ -20,7 +20,7 @@ class JobPosting(models.Model):
     employer_description = models.TextField()
     vacancy_description = models.TextField()
     application_steps = models.TextField()
-    custom_fields = models.JSONField()
+    custom_fields = models.JSONField(default=list)
     is_active = models.BooleanField()
     date_posted = models.DateTimeField()
     date_last_modified = models.DateTimeField()
