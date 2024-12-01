@@ -5,9 +5,15 @@ from user.models import User
 class PositionType(models.Model):
     name = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.name
+
 
 class AreaOfWork(models.Model):
     name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
 
 
 class JobPosting(models.Model):
@@ -24,6 +30,9 @@ class JobPosting(models.Model):
     is_active = models.BooleanField()
     date_posted = models.DateTimeField()
     date_last_modified = models.DateTimeField()
+
+    def __str__(self):
+        return self.title
 
 
 class EmailAlertSubscription(models.Model):
