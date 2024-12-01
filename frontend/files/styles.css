@@ -24,6 +24,9 @@ nav a:hover {
 
 main {
     padding: 20px;
+}
+
+h1, h2 {
     text-align: center;
 }
 
@@ -136,4 +139,39 @@ footer {
     align-items: center;    /* Centers content vertically */
     height: 60px;           /* Set a fixed height for the footer */
     background-color: #f1f1f1; /* Optional: Add a background color */
+}
+
+.browse-jobs {
+    display: flex;
+    height: 100%; /* Full height for the layout */
+}
+
+.job-list {
+    width: 30%; /* Sidebar width */
+    overflow-y: auto; /* Enable scrolling for long lists */
+    border-right: 1px solid #ddd;
+    background-color: #f9f9f9;
+    padding: 10px;
+}
+
+.job-list .job-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.job-list .job-card:hover {
+    background-color: #f1f1f1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.job-details {
+    width: 70%; /* Main content area width */
+    padding: 20px;
+    overflow-y: auto; /* Enable scrolling for long content */
+    background-color: #fff;
 }

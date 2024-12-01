@@ -190,9 +190,16 @@ $(document).ready(function () {
                 break;
             case "browseJobs":
                 $("#app").html(`
-                    <h1>Browse Jobs</h1>
-                    <p>Job listings will appear here...</p>
+                    <div class="browse-jobs">
+                        <div id="jobList" class="job-list">
+                            <!-- Compact job cards will appear here -->
+                        </div>
+                        <div id="jobDetails" class="job-details">
+                            <h2>Select a job to view details</h2>
+                        </div>
+                    </div>
                 `);
+                fetchJobPostings(1); // Load the first page of job postings
                 break;
 
             case "postJobs":
@@ -214,6 +221,121 @@ $(document).ready(function () {
         }
     }
 
+    function displayJobCards(postings) {
+        const jobListContainer = $("#jobList");
+        jobListContainer.empty();
+
+        if (postings.length === 0) {
+            jobListContainer.html("<p>No job postings found.</p>");
+            return;
+        }
+
+        postings.forEach((posting) => {
+            jobListContainer.append(`
+                <div class="job-card" data-id="${posting.id}">
+                    <h4>${posting.title}</h4>
+                    <p><strong>Position Type:</strong> ${posting.position_type}</p>
+                    <p><strong>Areas:</strong> ${posting.area_of_work.join(", ")}</p>
+                </div>
+            `);
+        });
+
+        // Attach click event to load job details
+        $(".job-card").on("click", function () {
+            const jobId = $(this).data("id");
+            fetchJobDetails(jobId);
+        });
+    }
+
+    function fetchJobPostings(pageNumber) {
+
+        $.ajax({
+            url: `${API_BASE_URL}/postings/`,
+            method: "GET",
+            data: { page: pageNumber, page_size: 10 },
+            success: function (data) {
+                displayJobCards(data.results);
+                updatePaginationControls(data);
+            },
+            error: function () {
+                $("#jobPostings").html("<p>Failed to load job postings. Please try again later.</p>");
+            },
+        });
+    }
+
+    function updatePaginationControls(data) {
+        const paginationControls = $("#paginationControls");
+        paginationControls.empty();
+
+        // Previous Page Button
+        if (data.previous) {
+            paginationControls.append(
+                `<button class="pagination-button" data-page="${data.current_page - 1}">Previous</button>`
+            );
+        }
+
+        // Page Numbers
+        for (let i = 1; i <= data.total_pages; i++) {
+            paginationControls.append(
+                `<button class="pagination-button ${
+                    i === data.current_page ? "active" : ""
+                }" data-page="${i}">${i}</button>`
+            );
+        }
+
+        // Next Page Button
+        if (data.next) {
+            paginationControls.append(
+                `<button class="pagination-button" data-page="${data.current_page + 1}">Next</button>`
+            );
+        }
+
+        // Attach click event to pagination buttons
+        $(".pagination-button").on("click", function () {
+            const page = $(this).data("page");
+            fetchJobPostings(page);
+        });
+    }
+
+    function fetchJobDetails(jobId) {
+
+        $.ajax({
+            url: `${API_BASE_URL}/postings/${jobId}/`,
+            method: "GET",
+            success: function (job) {
+                displayJobDetails(job);
+            },
+            error: function () {
+                $("#jobDetails").html("<p>Failed to load job details. Please try again later.</p>");
+            },
+        });
+    }
+
+    function displayJobDetails(job) {
+        const customFields = job.custom_fields
+            .map(
+                (field) =>
+                    `<p><strong>${field.field_name}:</strong> ${
+                        field.field_content.startsWith("http")
+                            ? `<a href="${field.field_content}" target="_blank">Download File</a>`
+                            : field.field_content
+                    }</p>`
+            )
+            .join("");
+
+        $("#jobDetails").html(`
+            <h2>${job.title}</h2>
+            <p><strong>Position Type:</strong> ${job.position_type}</p>
+            <p><strong>Areas of Work:</strong> ${job.area_of_work.join(", ")}</p>
+            <p><strong>Application Dates:</strong> ${job.application_start_date} to ${job.application_end_date}</p>
+            <div><strong>Employer Description:</strong> ${job.employer_description}</div>
+            <div><strong>Vacancy Description:</strong> ${job.vacancy_description}</div>
+            <div><strong>Application Steps:</strong> ${job.application_steps}</div>
+            <div><strong>Custom Fields:</strong> ${customFields}</div>
+            <p><strong>Date Posted:</strong> ${job.date_posted}</p>
+            <p><strong>Last Modified:</strong> ${job.date_last_modified}</p>
+        `);
+    }
 
     // Function to handle user registration
     function registerUser(email, password) {

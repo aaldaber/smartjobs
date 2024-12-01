@@ -1,8 +1,12 @@
 from .models import AreaOfWork, PositionType, JobPosting
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework import permissions
-from .serializers import AreaOfWorkSerializer, PositionTypeSerializer, PostingSerializerView
-from rest_framework.pagination import LimitOffsetPagination
+from .serializers import AreaOfWorkSerializer, PositionTypeSerializer, PostingSerializerView, PostingDetailSerializerView
+from rest_framework.pagination import PageNumberPagination
+
+
+class CustomNumberPagination(PageNumberPagination):
+    page_size = 10
 
 
 class AreaOfWorkList(ListAPIView):
@@ -21,5 +25,11 @@ class PostingList(ListAPIView):
     permission_classes = [permissions.AllowAny]
     queryset = JobPosting.objects.filter(is_active=True).order_by('-date_posted')
     serializer_class = PostingSerializerView
-    pagination_class = LimitOffsetPagination
+    pagination_class = CustomNumberPagination
+
+
+class PostingDetail(RetrieveAPIView):
+    permission_classes = [permissions.AllowAny]
+    queryset = JobPosting.objects.filter(is_active=True)
+    serializer_class = PostingDetailSerializerView
 

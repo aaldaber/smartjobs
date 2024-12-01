@@ -16,6 +16,21 @@ class PositionTypeSerializer(serializers.ModelSerializer):
 
 
 class PostingSerializerView(serializers.ModelSerializer):
+    position_type = serializers.SerializerMethodField(read_only=True)
+    area_of_work = serializers.SerializerMethodField(read_only=True)
+
+    def get_position_type(self, obj):
+        return obj.position_type.name
+
+    def get_area_of_work(self, obj):
+        return [x.name for x in obj.area_of_work.all()]
+
+    class Meta:
+        model = JobPosting
+        fields = ('id', 'title', 'position_type', 'area_of_work')
+
+
+class PostingDetailSerializerView(PostingSerializerView):
 
     class Meta:
         model = JobPosting
