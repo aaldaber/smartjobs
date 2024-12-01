@@ -206,10 +206,7 @@ $(document).ready(function () {
                 break;
 
             default:
-                $("#app").html(`
-                    <h1>Welcome</h1>
-                    <p>Please register or login to continue.</p>
-                `);
+                loadPage("main");
         }
     }
 
@@ -239,7 +236,8 @@ $(document).ready(function () {
             data: JSON.stringify({ email, password }),
             success: function (data) {
                 saveTokens(data.access, data.refresh);
-                loadPage("dashboard");
+                loadPage("postJobs");
+                loadNavbar();
             },
             error: function () {
                 $("#message").text("Login failed! Please check your credentials.");

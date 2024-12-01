@@ -19,10 +19,12 @@ services:
     ports:
       - "127.0.0.1:8080:80"
     volumes:
+      - ./frontend:/usr/share/nginx/html
       - ./backend/staticfiles:/staticfiles
       - ./backend/mediafiles:/mediafiles
     depends_on:
       - backend
+    restart: unless-stopped
   db:
     image: postgres:13.0-alpine
     volumes:
