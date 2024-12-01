@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/getme/', user_views.GetMeView.as_view(), name='getme'),
     path('api/areas-of-work/', core_views.AreaOfWorkList.as_view(), name='areas-of-work'),
     path('api/position-types/', core_views.PositionTypeList.as_view(), name='position-types'),
+    path('api/postings/', core_views.PostingList.as_view(), name='postings'),
 ]

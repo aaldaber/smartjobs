@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AreaOfWork, PositionType
+from .models import AreaOfWork, PositionType, JobPosting
 
 
 class AreaOfWorkSerializer(serializers.ModelSerializer):
@@ -14,3 +14,9 @@ class PositionTypeSerializer(serializers.ModelSerializer):
         model = PositionType
         fields = '__all__'
 
+
+class PostingSerializerView(serializers.ModelSerializer):
+
+    class Meta:
+        model = JobPosting
+        fields = '__all__'
