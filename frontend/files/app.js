@@ -206,9 +206,135 @@ $(document).ready(function () {
                 // Check if user is authenticated
                 checkAuthentication(() => {
                     $("#app").html(`
-                        <h1>Post Jobs</h1>
-                        <p>This page will allow users to post jobs.</p>
+                        <form id="postJobForm">
+                            <h1>Post a Job</h1>
+        
+                            <!-- Title -->
+                            <label for="title">Title</label>
+                            <input type="text" id="title" name="title" required />
+        
+                            <!-- Position Type -->
+                            <label for="positionType">Position Type</label>
+                            <select id="positionType" name="positionType" required></select>
+        
+                            <!-- Areas of Work -->
+                            <label for="areasOfWork">Areas of Work</label>
+                            <select id="areasOfWork" name="areasOfWork" multiple required></select>
+        
+                            <!-- Application Dates -->
+                            <label for="applicationStartDate">Application Start Date</label>
+                            <input type="text" id="applicationStartDate" name="applicationStartDate" required />
+        
+                            <label for="applicationEndDate">Application End Date</label>
+                            <input type="text" id="applicationEndDate" name="applicationEndDate" required />
+        
+                            <!-- WYSIWYG Fields -->
+                            <label for="employerDescription">Employer Description</label>
+                            <textarea id="employerDescription" name="employerDescription"></textarea>
+        
+                            <label for="vacancyDescription">Vacancy Description</label>
+                            <textarea id="vacancyDescription" name="vacancyDescription"></textarea>
+        
+                            <label for="applicationSteps">Application Steps</label>
+                            <textarea id="applicationSteps" name="applicationSteps"></textarea>
+        
+                            <!-- Custom Fields -->
+                            <div id="customFieldsContainer"></div>
+                            <button type="button" id="addCustomField">Add Custom Field</button>
+        
+                            <!-- Submit -->
+                            <button type="submit">Post Job</button>
+                        </form>
                     `);
+                    populatePositionTypes();
+                    populateAreasOfWork();
+                    initializeDatePickers();
+                    initializeWYSIWYGEditors();
+                    attachCustomFieldHandler();
+                    function populatePositionTypes() {
+                        $.ajax({
+                            url: `${API_BASE_URL}/position-types/`,
+                            method: "GET",
+                            success: function (data) {
+                                const positionTypeDropdown = $("#positionType");
+                                data.forEach((type) => {
+                                    positionTypeDropdown.append(`<option value="${type.id}">${type.name}</option>`);
+                                });
+                            },
+                            error: function () {
+                                console.error("Failed to load position types.");
+                            },
+                        });
+                        }
+
+                        function populateAreasOfWork() {
+                            $.ajax({
+                                url: `${API_BASE_URL}/areas-of-work/`,
+                                method: "GET",
+                                success: function (data) {
+                                    const areasOfWorkDropdown = $("#areasOfWork");
+                                    data.forEach((area) => {
+                                        areasOfWorkDropdown.append(`<option value="${area.id}">${area.name}</option>`);
+                                    });
+                                },
+                                error: function () {
+                                    console.error("Failed to load areas of work.");
+                                },
+                            });
+                        }
+                        function initializeDatePickers() {
+                            $("#applicationStartDate, #applicationEndDate").datepicker({
+                                dateFormat: "yy-mm-dd", // Match expected backend format
+                            });
+                        }
+
+                        function initializeWYSIWYGEditors() {
+                            ["#employerDescription", "#vacancyDescription", "#applicationSteps"].forEach((selector) => {
+                                $(selector).ckeditor();
+
+                            });
+                        }
+
+                        function attachCustomFieldHandler() {
+                            $("#addCustomField").on("click", function () {
+                                const customFieldsContainer = $("#customFieldsContainer");
+                                const fieldId = Date.now(); // Unique ID for each custom field
+
+                                customFieldsContainer.append(`
+                                    <div class="custom-field" data-id="${fieldId}">
+                                        <label for="customField${fieldId}">Custom Field</label>
+                                        <select class="customFieldType" data-id="${fieldId}">
+                                            <option value="wysiwyg">WYSIWYG</option>
+                                            <option value="file">File Upload</option>
+                                        </select>
+                                        <div class="customFieldContent" id="customFieldContent${fieldId}"></div>
+                                        <button type="button" class="removeCustomField" data-id="${fieldId}">Remove</button>
+                                    </div>
+                                `);
+
+                                attachCustomFieldTypeHandler(fieldId);
+                            });
+                        }
+
+                        function attachCustomFieldTypeHandler(fieldId) {
+                            $(`.customFieldType[data-id=${fieldId}]`).on("change", function () {
+                                const type = $(this).val();
+                                const contentContainer = $(`#customFieldContent${fieldId}`);
+
+                                if (type === "wysiwyg") {
+                                    contentContainer.html(`<textarea id="wysiwyg${fieldId}"></textarea>`);
+                                    $(`#wysiwyg${fieldId}`).ckeditor();
+                                } else if (type === "file") {
+                                    contentContainer.html(`<input type="file" id="file${fieldId}" />`);
+                                }
+                            });
+
+                            $(`.removeCustomField[data-id=${fieldId}]`).on("click", function () {
+                                $(`.custom-field[data-id=${fieldId}]`).remove();
+                            });
+                        }
+
+
                 },
                     () => {
                     loadPage("login");
@@ -316,7 +442,7 @@ $(document).ready(function () {
             .map(
                 (field) =>
                     `<p><strong>${field.field_name}:</strong> ${
-                        field.field_content.startsWith("http")
+                        field.field_content.startsWith("/media/")
                             ? `<a href="${field.field_content}" target="_blank">Download File</a>`
                             : field.field_content
                     }</p>`
@@ -500,6 +626,74 @@ $(document).ready(function () {
                     <p><strong>Application Dates:</strong> ${result.application_start_date} to ${result.application_end_date}</p>
                 </div>
             `);
+        });
+    }
+
+    $(document).on("submit", "#postJobForm", function (e) {
+        e.preventDefault();
+
+        const formData = {
+            title: $("#title").val(),
+            position_type: $("#positionType").val(),
+            area_of_work: $("#areasOfWork").val(),
+            application_start_date: $("#applicationStartDate").val(),
+            application_end_date: $("#applicationEndDate").val(),
+            employer_description: $("#employerDescription").val(),
+            vacancy_description: $("#vacancyDescription").val(),
+            application_steps: $("#applicationSteps").val(),
+            custom_fields: [],
+        };
+
+        // Process custom fields
+        $(".custom-field").each(function () {
+            const fieldId = $(this).data("id");
+            const type = $(`.customFieldType[data-id=${fieldId}]`).val();
+            const content =
+                type === "wysiwyg"
+                    ? $(`#wysiwyg${fieldId}`).val()
+                    : $(`#file${fieldId}`)[0].files[0]; // File object
+
+            formData.custom_fields.push({
+                field_type: type,
+                field_content: content,
+            });
+        });
+
+        submitJobPosting(formData);
+    });
+
+    function submitJobPosting(data) {
+        const formData = new FormData();
+
+        // Add standard fields
+        for (const key in data) {
+            if (key === "custom_fields") continue;
+            formData.append(key, data[key]);
+        }
+
+        // Handle custom fields
+        data.custom_fields.forEach((field, index) => {
+            if (field.field_type === "file") {
+                formData.append(`custom_fields[${index}][content]`, field.field_content);
+            } else {
+                formData.append(`custom_fields[${index}][content]`, field.field_content);
+            }
+            formData.append(`custom_fields[${index}][type]`, field.field_type);
+        });
+
+        $.ajax({
+            url: "/api/post-a-job/",
+            method: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function () {
+                alert("Job posted successfully!");
+                loadPage("browseJobs");
+            },
+            error: function () {
+                alert("Failed to post job. Please try again.");
+            },
         });
     }
 

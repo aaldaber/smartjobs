@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/areas-of-work/', core_views.AreaOfWorkList.as_view(), name='areas-of-work'),
     path('api/position-types/', core_views.PositionTypeList.as_view(), name='position-types'),
     path('api/postings/', core_views.PostingList.as_view(), name='postings'),
-    path('api/postings/<int:pk>/', core_views.PostingDetail.as_view(), name='posting-detail')
+    path('api/postings/<int:pk>/', core_views.PostingDetail.as_view(), name='posting-detail'),
+    path('api/post-a-job/', core_views.PostAJob.as_view(), name='post-a-job')
 
 ]

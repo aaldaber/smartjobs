@@ -27,9 +27,9 @@ class JobPosting(models.Model):
     vacancy_description = models.TextField()
     application_steps = models.TextField()
     custom_fields = models.JSONField(default=list, blank=True)
-    is_active = models.BooleanField()
-    date_posted = models.DateTimeField()
-    date_last_modified = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    date_posted = models.DateTimeField(auto_now_add=True)
+    date_last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title

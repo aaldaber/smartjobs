@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import AreaOfWork, PositionType, JobPosting
+import datetime
 
 
 class AreaOfWorkSerializer(serializers.ModelSerializer):
@@ -35,3 +36,13 @@ class PostingDetailSerializerView(PostingSerializerView):
     class Meta:
         model = JobPosting
         fields = '__all__'
+
+
+class CreateJobPostingSerializer(serializers.ModelSerializer):
+    application_start_date = serializers.DateField(required=True)
+    application_end_date = serializers.DateField(required=True)
+
+    class Meta:
+        model = JobPosting
+        fields = ('user', 'title', 'position_type', 'area_of_work', 'application_start_date', 'application_end_date',
+                  'employer_description', 'vacancy_description', 'application_steps')

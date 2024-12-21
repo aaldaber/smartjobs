@@ -175,3 +175,109 @@ footer {
     overflow-y: auto; /* Enable scrolling for long content */
     background-color: #fff;
 }
+
+
+/* Form Container */
+form#postJobForm {
+    max-width: 600px;
+    margin: 30px auto; /* Center the form */
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Title */
+form#postJobForm h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+/* Form Labels */
+form#postJobForm label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Form Inputs and Selects */
+form#postJobForm input[type="text"],
+form#postJobForm select,
+form#postJobForm textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s;
+}
+
+/* Focus Effect for Inputs */
+form#postJobForm input[type="text"]:focus,
+form#postJobForm select:focus,
+form#postJobForm textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* WYSIWYG Fields */
+form#postJobForm textarea {
+    min-height: 100px;
+    resize: vertical; /* Allow resizing vertically */
+}
+
+/* Buttons */
+form#postJobForm button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+/* Button Hover Effect */
+form#postJobForm button:hover {
+    background-color: #0056b3;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom Fields Section */
+#customFieldsContainer {
+    margin-top: 20px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+/* Custom Field Containers */
+.custom-field {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+/* Remove Custom Field Button */
+.custom-field .removeCustomField {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #d9534f;
+    cursor: pointer;
+}
+
+.custom-field .removeCustomField:hover {
+    text-decoration: underline;
+}
