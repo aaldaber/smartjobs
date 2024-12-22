@@ -71,3 +71,47 @@ class PostAJob(CreateAPIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(data={"message": "Job posted!"}, status=HTTP_200_OK)
+
+
+class SearchJobs(ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    queryset = JobPosting.objects.filter(is_active=True).order_by('-date_posted')
+    serializer_class = PostingSerializerView
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        keyword = self.request.GET.get('keyword')
+        areas_of_work = self.request.GET.getlist('areas_of_work')
+        position_types = [int(x) for x in self.request.GET.getlist('position_types')]
+        areas_of_work = [int(x) for x in areas_of_work]
+
+        if position_types and areas_of_work and keyword:
+            queryset = queryset.filter(title__icontains=keyword,
+                                       area_of_work__pk__in=areas_of_work,
+                                       position_type__pk__in=position_types)
+        elif keyword and (position_types and not areas_of_work):
+            queryset = queryset.filter(title__icontains=keyword,
+                                       position_type__pk__in=position_types)
+        elif keyword and (areas_of_work and not position_types):
+            queryset = queryset.filter(title__icontains=keyword,
+                                       area_of_work__pk__in=position_types)
+        elif keyword and (not areas_of_work and not position_types):
+            queryset = queryset.filter(title__icontains=keyword)
+        elif not keyword and (areas_of_work and position_types):
+            queryset = queryset.filter(area_of_work__pk__in=areas_of_work,
+                                       position_type__pk__in=position_types)
+        elif not keyword and (areas_of_work and not position_types):
+            queryset = queryset.filter(area_of_work__pk__in=areas_of_work)
+        elif not keyword and (position_types and not areas_of_work):
+            queryset = queryset.filter(position_type__pk__in=position_types)
+        else:
+            queryset = JobPosting.objects.none()
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

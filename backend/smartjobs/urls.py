@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/position-types/', core_views.PositionTypeList.as_view(), name='position-types'),
     path('api/postings/', core_views.PostingList.as_view(), name='postings'),
     path('api/postings/<int:pk>/', core_views.PostingDetail.as_view(), name='posting-detail'),
-    path('api/post-a-job/', core_views.PostAJob.as_view(), name='post-a-job')
+    path('api/post-a-job/', core_views.PostAJob.as_view(), name='post-a-job'),
+    path('api/search/', core_views.SearchJobs.as_view(), name='search'),
 
 ]

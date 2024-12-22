@@ -281,3 +281,9 @@ form#postJobForm button:hover {
 .custom-field .removeCustomField:hover {
     text-decoration: underline;
 }
+
+.results-container {
+    display: flex;
+    margin-top: 20px;
+    height: 100%;
+}

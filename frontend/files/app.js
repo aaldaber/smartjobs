@@ -159,7 +159,15 @@ $(document).ready(function () {
     
                         <button id="searchButton">Search</button>
                     </div>
-                    <div id="searchResults"></div>
+                    <!-- Results Section -->
+                    <div id="searchResultsContainer" class="results-container" style="display: none;">
+                        <div id="jobList" class="job-list">
+                            <!-- Sidebar with job cards -->
+                        </div>
+                        <div id="jobDetails" class="job-details">
+                            <h2>Select a job to view details</h2>
+                        </div>
+                    </div>
                 `);
 
                 populateDropdowns();
@@ -603,29 +611,40 @@ $(document).ready(function () {
                 displaySearchResults(results);
             },
             error: function () {
-                $("#searchResults").html("<p>Error performing search.</p>");
+                $("#searchResultsContainer").hide();
+                alert("Error performing search.");
             },
         });
     });
 
     function displaySearchResults(results) {
-        const resultsContainer = $("#searchResults");
-        resultsContainer.empty();
+        const resultsContainer = $("#searchResultsContainer");
+        const jobListContainer = $("#jobList");
 
         if (results.length === 0) {
-            resultsContainer.html("<p>No results found.</p>");
+            resultsContainer.hide();
+            alert("No results found.");
             return;
         }
 
+        // Show results container
+        resultsContainer.show();
+        jobListContainer.empty();
+
         results.forEach((result) => {
-            resultsContainer.append(`
-                <div class="result-item">
-                    <h3>${result.title}</h3>
+            jobListContainer.append(`
+                <div class="job-card" data-id="${result.id}">
+                    <h4>${result.title}</h4>
                     <p><strong>Position Type:</strong> ${result.position_type}</p>
-                    <p><strong>Area of Work:</strong> ${result.area_of_work}</p>
-                    <p><strong>Application Dates:</strong> ${result.application_start_date} to ${result.application_end_date}</p>
+                    <p><strong>Areas:</strong> ${result.area_of_work.join(", ")}</p>
                 </div>
             `);
+        });
+
+        // Attach click event to load job details
+        $(".job-card").on("click", function () {
+            const jobId = $(this).data("id");
+            fetchJobDetails(jobId);
         });
     }
 
