@@ -1,17 +1,18 @@
 import os.path
 
-from .models import AreaOfWork, PositionType, JobPosting
+from .models import AreaOfWork, PositionType, JobPosting, EmailAlertSubscription
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from .serializers import (AreaOfWorkSerializer, PositionTypeSerializer, PostingSerializerView,
-                          PostingDetailSerializerView, CreateJobPostingSerializer)
+                          PostingDetailSerializerView, CreateJobPostingSerializer, EmailAlertSubscriptionSerializer)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
+from django.db.models import Count
 
 
 class CustomNumberPagination(PageNumberPagination):
@@ -115,3 +116,44 @@ class SearchJobs(ListAPIView):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class SearchSubscribe(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = EmailAlertSubscriptionSerializer(data=request.data)
+        create_new_obj = True
+        if serializer.is_valid():
+            areas_of_work = AreaOfWork.objects.filter(id__in=[int(x) for x in serializer.validated_data.get("areas_of_work")]) if serializer.validated_data.get("areas_of_work") else None
+            position_types = PositionType.objects.filter(id__in=[int(x) for x in serializer.validated_data.get("position_types")]) if serializer.validated_data.get("position_types") else None
+            if areas_of_work and position_types:
+                if EmailAlertSubscription.objects.filter(email=serializer.validated_data['email'],
+                                                         keyword=serializer.validated_data['keyword'],
+                                                         position_type__in=position_types,
+                                                         area_of_work__in=areas_of_work).annotate(num_area=Count('area_of_work', distinct=True), num_position=Count('position_type', distinct=True)).filter(num_area=areas_of_work.count(), num_position=position_types.count()).exists():
+                    create_new_obj = False
+            elif areas_of_work and not position_types:
+                if EmailAlertSubscription.objects.filter(email=serializer.validated_data['email'],
+                                                         keyword=serializer.validated_data['keyword'],
+                                                         position_type=None,
+                                                         area_of_work__in=areas_of_work).annotate(num_area=Count('area_of_work')).filter(num_area=areas_of_work.count()).exists():
+                    create_new_obj = False
+            elif not areas_of_work and position_types:
+                if EmailAlertSubscription.objects.filter(email=serializer.validated_data['email'],
+                                                         keyword=serializer.validated_data['keyword'],
+                                                         position_type__in=position_types,
+                                                         area_of_work=None).annotate(num_position=Count('position_type')).filter(num_position=position_types.count()).exists():
+                    create_new_obj = False
+
+            if create_new_obj:
+                subscription = EmailAlertSubscription.objects.create(email=serializer.validated_data['email'],
+                                                                     keyword=serializer.validated_data['keyword'],
+                                                                     )
+                if areas_of_work:
+                    subscription.area_of_work.add(*areas_of_work)
+                if position_types:
+                    subscription.position_type.add(*position_types)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response()

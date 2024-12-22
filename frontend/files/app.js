@@ -617,20 +617,84 @@ $(document).ready(function () {
         });
     });
 
+    function showSubscribeModal() {
+    // Create the modal HTML
+    const modalHtml = `
+        <div id="subscribeModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Subscribe to this Search</h2>
+                <p>To subscribe to this search, enter your email address:</p>
+                <input type="email" id="subscribeEmail" placeholder="Enter your email" required />
+                <button id="confirmSubscribeButton">Subscribe</button>
+            </div>
+        </div>
+    `;
+
+    // Append modal to the body and display it
+    $("body").append(modalHtml);
+    $(".modal").fadeIn();
+
+    // Close modal on clicking the close button
+    $(".close").on("click", function () {
+        $("#subscribeModal").remove();
+    });
+
+    // Handle subscribe button click
+    $("#confirmSubscribeButton").on("click", function () {
+        handleSubscription();
+    });
+}
+
+function handleSubscription() {
+    const email = $("#subscribeEmail").val();
+    if (!email) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+
+    // Collect search parameters
+    const keyword = $("#searchKeyword").val();
+    const positionTypes = $("#positionTypes").val();
+    const areasOfWork = $("#areasOfWork").val();
+
+    // Prepare data for the subscription
+    const subscriptionData = {
+        email: email,
+        keyword: keyword || "",
+        position_types: positionTypes || [],
+        areas_of_work: areasOfWork || [],
+    };
+
+    // Send POST request
+    $.ajax({
+        url: "/api/subscribe/",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(subscriptionData),
+        success: function () {
+            alert("You have successfully subscribed to this search.");
+            $("#subscribeModal").remove(); // Close modal
+        },
+        error: function () {
+            alert("Failed to subscribe. Please try again later.");
+        },
+    });
+}
+
+
     function displaySearchResults(results) {
         const resultsContainer = $("#searchResultsContainer");
         const jobListContainer = $("#jobList");
-
-        if (results.length === 0) {
-            resultsContainer.hide();
-            alert("No results found.");
-            return;
-        }
+        const subscribeSectionId = "subscribeSection";
 
         // Show results container
         resultsContainer.show();
         jobListContainer.empty();
 
+        if (results.length === 0) {
+            jobListContainer.html("<p>No results found.</p>");
+        } else {
         results.forEach((result) => {
             jobListContainer.append(`
                 <div class="job-card" data-id="${result.id}">
@@ -646,6 +710,21 @@ $(document).ready(function () {
             const jobId = $(this).data("id");
             fetchJobDetails(jobId);
         });
+        }
+
+        // Ensure the Subscribe section is added only once
+        if (!$(`#${subscribeSectionId}`).length) {
+            resultsContainer.append(`
+                <div id="${subscribeSectionId}">
+                    <button id="subscribeButton">Subscribe to this Search</button>
+                </div>
+            `);
+
+            // Attach click event to the subscribe button
+            $("#subscribeButton").on("click", function () {
+                showSubscribeModal();
+            });
+        }
     }
 
     $(document).on("submit", "#postJobForm", function (e) {

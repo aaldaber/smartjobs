@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AreaOfWork, PositionType, JobPosting
+from .models import AreaOfWork, PositionType, JobPosting, EmailAlertSubscription
 import datetime
 
 
@@ -46,3 +46,13 @@ class CreateJobPostingSerializer(serializers.ModelSerializer):
         model = JobPosting
         fields = ('user', 'title', 'position_type', 'area_of_work', 'application_start_date', 'application_end_date',
                   'employer_description', 'vacancy_description', 'application_steps')
+
+
+class EmailAlertSubscriptionSerializer(serializers.ModelSerializer):
+    keyword = serializers.CharField(allow_blank=True, required=True)
+    position_types = serializers.ListField()
+    areas_of_work = serializers.ListField()
+
+    class Meta:
+        model = EmailAlertSubscription
+        fields = ('email', 'keyword', 'position_types', 'areas_of_work')

@@ -40,8 +40,8 @@ class EmailAlertSubscription(models.Model):
     keyword = models.CharField(max_length=50)
     position_type = models.ManyToManyField(PositionType, related_name='subscriptions')
     area_of_work = models.ManyToManyField(AreaOfWork, related_name='subscriptions')
-    last_alert_sent = models.DateTimeField()
-    last_post_sent = models.ForeignKey(JobPosting, on_delete=models.CASCADE)
+    last_alert_sent = models.DateTimeField(null=True, blank=True)
+    last_post_sent = models.ForeignKey(JobPosting, on_delete=models.CASCADE, null=True, blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
 
 
