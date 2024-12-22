@@ -95,7 +95,7 @@ class SearchJobs(ListAPIView):
                                        position_type__pk__in=position_types)
         elif keyword and (areas_of_work and not position_types):
             queryset = queryset.filter(title__icontains=keyword,
-                                       area_of_work__pk__in=position_types)
+                                       area_of_work__pk__in=areas_of_work)
         elif keyword and (not areas_of_work and not position_types):
             queryset = queryset.filter(title__icontains=keyword)
         elif not keyword and (areas_of_work and position_types):
