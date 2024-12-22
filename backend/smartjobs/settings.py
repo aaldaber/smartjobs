@@ -145,3 +145,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ),
 }
+SITE_URL = os.environ.get('SITE_URL')
+MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+MAILGUN_URL = os.environ.get('MAILGUN_URL')
+MAILGUN_SENDER = os.environ.get('MAILGUN_SENDER')
+ENCRYPT_KEY=os.environ.get('ENCRYPT_KEY')
