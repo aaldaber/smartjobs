@@ -31,7 +31,7 @@ class Command(BaseCommand):
         fernet = Fernet(settings.ENCRYPT_KEY)
         message = ('Dear Subscriber,<br>'
                    'Below are newly posted vacancies:<br><br>')
-        for each in queryset:
+        for each in queryset.distinct():
             enc_string = "{}-{}".format(each.id, sub.id)
             enc_string = fernet.encrypt(enc_string.encode()).decode()
             message += '<a href="{}/{}">{}</a><br>'.format(settings.SITE_URL, enc_string, each.title)
