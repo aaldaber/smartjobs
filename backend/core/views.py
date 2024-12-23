@@ -1,6 +1,6 @@
 import os.path
 
-from .models import AreaOfWork, PositionType, JobPosting, EmailAlertSubscription
+from .models import AreaOfWork, PositionType, JobPosting, EmailAlertSubscription, JobView
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.views import APIView
 from rest_framework import permissions, status
@@ -13,6 +13,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.db.models import Count
+from cryptography.fernet import Fernet
+from django.utils import timezone
 
 
 class CustomNumberPagination(PageNumberPagination):
@@ -157,3 +159,15 @@ class SearchSubscribe(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response()
+
+
+class LoadPost(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        fernet = Fernet(settings.ENCRYPT_KEY)
+        decrypted = fernet.decrypt(kwargs.get('encrypted')).decode()
+        post_id, sub_id = tuple([int(x) for x in decrypted.split("-")])
+        JobView.objects.create(job_posting_id=post_id, alert_subscription_id=sub_id, date_viewed=timezone.now())
+        serializer = PostingDetailSerializerView(instance=JobPosting.objects.get(id=post_id))
+        return Response(serializer.data)

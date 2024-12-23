@@ -1,5 +1,7 @@
 $(document).ready(function () {
     const API_BASE_URL = "/api";
+    const path = window.location.pathname; // Get the current path
+    const jobId = path.split("/")[1]
 
     // Ensure the access token is included in the Authorization header and handle 401
     $.ajaxSetup({
@@ -445,6 +447,48 @@ $(document).ready(function () {
         });
     }
 
+    function fetchEncJobDetails(jobId) {
+
+        $.ajax({
+            url: `${API_BASE_URL}/load-post/${jobId}/`,
+            method: "GET",
+            success: function (job) {
+                displayEncJobDetails(job);
+            },
+            error: function () {
+                $("#app").html("<p>Failed to load job details. Please try again later.</p>");
+            },
+        });
+    }
+
+    function displayEncJobDetails(job) {
+    const customFields = job.custom_fields
+        .map(
+            (field) =>
+                `<p><strong>${field.field_name}:</strong> ${
+                    field.field_content.startsWith("/media/")
+                        ? `<a href="${field.field_content}" target="_blank">Download File</a>`
+                        : field.field_content
+                }</p>`
+        )
+        .join("");
+
+    $("#app").html(`
+        <div class="job-details">
+            <h2>${job.title}</h2>
+            <p><strong>Position Type:</strong> ${job.position_type}</p>
+            <p><strong>Areas of Work:</strong> ${job.area_of_work.join(", ")}</p>
+            <p><strong>Application Dates:</strong> ${job.application_start_date} to ${job.application_end_date}</p>
+            <div><strong>Employer Description:</strong> ${job.employer_description}</div>
+            <div><strong>Vacancy Description:</strong> ${job.vacancy_description}</div>
+            <div><strong>Application Steps:</strong> ${job.application_steps}</div>
+            <div><strong>Custom Fields:</strong> ${customFields}</div>
+            <p><strong>Date Posted:</strong> ${job.date_posted}</p>
+        </div>
+    `);
+}
+
+
     function displayJobDetails(job) {
         const customFields = job.custom_fields
             .map(
@@ -544,7 +588,11 @@ $(document).ready(function () {
     }, 4 * 60 * 1000); // Refresh every 4 minutes (based on a 5-minute expiry)
 
     // Load the initial page
-    loadPage("welcome");
+    if (jobId) {
+        fetchEncJobDetails(jobId); // Fetch and display job details for the extracted ID
+    } else {
+        loadPage("main"); // Load the default main page if no ID is present
+    }
 
     function populateDropdowns() {
 
