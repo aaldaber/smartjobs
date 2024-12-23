@@ -1,6 +1,8 @@
 $(document).ready(function () {
     const API_BASE_URL = "/api";
     const path = window.location.pathname; // Get the current path
+    const unsubscribePattern = /^\/unsubscribe-(.+)$/; // Regex to match "unsubscribe-{id}" format
+    const unsubmatch = path.match(unsubscribePattern);
     const jobId = path.split("/")[1]
 
     // Ensure the access token is included in the Authorization header and handle 401
@@ -588,11 +590,46 @@ $(document).ready(function () {
     }, 4 * 60 * 1000); // Refresh every 4 minutes (based on a 5-minute expiry)
 
     // Load the initial page
-    if (jobId) {
+    if (unsubmatch) {
+        const subscriptionId = unsubmatch[1]; // Extract the subscription ID
+        unsubscribeUser(subscriptionId); // Perform the unsubscribe action
+    }
+    else if (jobId) {
         fetchEncJobDetails(jobId); // Fetch and display job details for the extracted ID
     } else {
         loadPage("main"); // Load the default main page if no ID is present
     }
+
+    function unsubscribeUser(subscriptionId) {
+        $.ajax({
+            url: `/api/unsubscribe/${subscriptionId}/`,
+            method: "GET",
+            success: function () {
+                showUnsubscribeSuccess(); // Display success message
+            },
+            error: function () {
+                showUnsubscribeError(); // Display error message
+            },
+        });
+    }
+
+    function showUnsubscribeSuccess() {
+    $("#app").html(`
+        <div class="unsubscribe-success">
+            <h1>Unsubscribed Successfully</h1>
+            <p>You have been unsubscribed from a weekly email with new vacancies.</p>
+        </div>
+    `);
+}
+
+    function showUnsubscribeError() {
+    $("#app").html(`
+        <div class="unsubscribe-error">
+            <h1>Unsubscribe Failed</h1>
+            <p>We were unable to process your request. Please try again later.</p>
+        </div>
+    `);
+}
 
     function populateDropdowns() {
 

@@ -347,3 +347,29 @@ form#postJobForm button:hover {
 .modal-content button:hover {
     background-color: #0056b3;
 }
+
+.unsubscribe-success,
+.unsubscribe-error {
+    max-width: 600px;
+    margin: 50px auto;
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.unsubscribe-success h1 {
+    color: #28a745; /* Green for success */
+}
+
+.unsubscribe-error h1 {
+    color: #dc3545; /* Red for error */
+}
+
+.unsubscribe-success p,
+.unsubscribe-error p {
+    font-size: 1rem;
+    color: #555;
+}

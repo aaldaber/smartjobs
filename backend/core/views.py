@@ -134,18 +134,35 @@ class SearchSubscribe(APIView):
                                                          keyword=serializer.validated_data['keyword'],
                                                          position_type__in=position_types,
                                                          area_of_work__in=areas_of_work).annotate(num_area=Count('area_of_work', distinct=True), num_position=Count('position_type', distinct=True)).filter(num_area=areas_of_work.count(), num_position=position_types.count()).exists():
+                    EmailAlertSubscription.objects.filter(email=serializer.validated_data['email'],
+                                                          keyword=serializer.validated_data['keyword'],
+                                                          position_type__in=position_types,
+                                                          area_of_work__in=areas_of_work).annotate(
+                        num_area=Count('area_of_work', distinct=True),
+                        num_position=Count('position_type', distinct=True)).filter(num_area=areas_of_work.count(),
+                                                                                   num_position=position_types.count()).update(active=True)
                     create_new_obj = False
             elif areas_of_work and not position_types:
                 if EmailAlertSubscription.objects.filter(email=serializer.validated_data['email'],
                                                          keyword=serializer.validated_data['keyword'],
                                                          position_type=None,
                                                          area_of_work__in=areas_of_work).annotate(num_area=Count('area_of_work')).filter(num_area=areas_of_work.count()).exists():
+                    EmailAlertSubscription.objects.filter(email=serializer.validated_data['email'],
+                                                          keyword=serializer.validated_data['keyword'],
+                                                          position_type=None,
+                                                          area_of_work__in=areas_of_work).annotate(
+                        num_area=Count('area_of_work')).filter(num_area=areas_of_work.count()).update(active=True)
                     create_new_obj = False
             elif not areas_of_work and position_types:
                 if EmailAlertSubscription.objects.filter(email=serializer.validated_data['email'],
                                                          keyword=serializer.validated_data['keyword'],
                                                          position_type__in=position_types,
                                                          area_of_work=None).annotate(num_position=Count('position_type')).filter(num_position=position_types.count()).exists():
+                    EmailAlertSubscription.objects.filter(email=serializer.validated_data['email'],
+                                                          keyword=serializer.validated_data['keyword'],
+                                                          position_type__in=position_types,
+                                                          area_of_work=None).annotate(
+                        num_position=Count('position_type')).filter(num_position=position_types.count()).update(active=True)
                     create_new_obj = False
 
             if create_new_obj:
@@ -171,3 +188,16 @@ class LoadPost(APIView):
         JobView.objects.create(job_posting_id=post_id, alert_subscription_id=sub_id, date_viewed=timezone.now())
         serializer = PostingDetailSerializerView(instance=JobPosting.objects.get(id=post_id))
         return Response(serializer.data)
+
+
+class Unsubscribe(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        fernet = Fernet(settings.ENCRYPT_KEY)
+        decrypted = fernet.decrypt(kwargs.get('encrypted')).decode()
+        sub_id = int(decrypted)
+        sub = EmailAlertSubscription.objects.get(id=sub_id)
+        sub.active = False
+        sub.save()
+        return Response({})

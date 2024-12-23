@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/post-a-job/', core_views.PostAJob.as_view(), name='post-a-job'),
     path('api/search/', core_views.SearchJobs.as_view(), name='search'),
     path('api/subscribe/', core_views.SearchSubscribe.as_view(), name='subscribe'),
-    path('api/load-post/<str:encrypted>/', core_views.LoadPost.as_view(), name='load-post')
+    path('api/load-post/<str:encrypted>/', core_views.LoadPost.as_view(), name='load-post'),
+    path('api/unsubscribe/<str:encrypted>/', core_views.Unsubscribe.as_view(), name='unsubscribe')
 
 ]

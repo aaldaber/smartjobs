@@ -35,11 +35,13 @@ class Command(BaseCommand):
             enc_string = "{}-{}".format(each.id, sub.id)
             enc_string = fernet.encrypt(enc_string.encode()).decode()
             message += '<a href="{}/{}">{}</a><br>'.format(settings.SITE_URL, enc_string, each.title)
+        message += '<br>'
+        message += 'If you wish to unsubscribe from this email, you can click <a href="{}/unsubscribe-{}">this</a> link.'.format(settings.SITE_URL, fernet.encrypt(str(sub.id).encode()).decode())
         return message
 
 
     def handle(self, *args, **options):
-        for sub in EmailAlertSubscription.objects.all():
+        for sub in EmailAlertSubscription.objects.filter(active=True):
             keyword = sub.keyword
             position_types = [x.id for x in sub.position_type.all()]
             areas_of_work = [x.id for x in sub.area_of_work.all()]
